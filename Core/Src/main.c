@@ -23,7 +23,9 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
-#include "usbd_hid.h"
+#include <stdbool.h>
+
+#include "gpio.h"
 
 /* USER CODE END Includes */
 
@@ -46,21 +48,7 @@
 
 /* USER CODE BEGIN PV */
 
-extern USBD_HandleTypeDef hUsbDeviceFS;
 
-typedef struct
-{
-  uint8_t MODIFIER;
-  uint8_t RESERVED;
-  uint8_t KEYCODE1;
-  uint8_t KEYCODE2;
-  uint8_t KEYCODE3;
-  uint8_t KEYCODE4;
-  uint8_t KEYCODE5;
-  uint8_t KEYCODE6;
-}subKeyBoard;
-
-subKeyBoard keyBoardHIDsub = {0,0,0,0,0,0,0,0};
 
 /* USER CODE END PV */
 
@@ -108,27 +96,30 @@ int main(void)
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 2 */
 
+  enable_clock(RCC_APB2ENR_IOPCEN);
+  //enable_clock(RCC_APB2ENR_IOPAEN);
+
+  set_pin_output(GPIOC, 13);
+
+  set_pin_input_pull_down(GPIOC, 14);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  // ReSharper disable once CppDFAEndlessLoop
   while (1)
   {
     /* USER CODE END WHILE */
 
+    if (read_pin(GPIOC, 14)) {
+      write_pin(GPIOC, 13, HIGH);
+    } else {
+      write_pin(GPIOC, 13, LOW);
+    }
+
     /* USER CODE BEGIN 3 */
-    keyBoardHIDsub.KEYCODE1=0x04;  // Press A key
-    keyBoardHIDsub.MODIFIER=0x02;  // To press shift key
-    keyBoardHIDsub.KEYCODE2=0x05;  // Press B key
-    keyBoardHIDsub.KEYCODE3=0x06;  // Press C key
-    USBD_HID_SendReport(&hUsbDeviceFS,&keyBoardHIDsub,sizeof(keyBoardHIDsub));
-    HAL_Delay(50); 		       // Press all key for 50 milliseconds
-    keyBoardHIDsub.MODIFIER=0x00;  // To release shift key
-    keyBoardHIDsub.KEYCODE1=0x00;  // Release A key
-    keyBoardHIDsub.KEYCODE2=0x00;  // Release B key
-    keyBoardHIDsub.KEYCODE3=0x00;  // Release C key
-    USBD_HID_SendReport(&hUsbDeviceFS,&keyBoardHIDsub,sizeof(keyBoardHIDsub));
-    HAL_Delay(1000); 	       // Repeat this task on every 1 second
+
   }
   /* USER CODE END 3 */
 }

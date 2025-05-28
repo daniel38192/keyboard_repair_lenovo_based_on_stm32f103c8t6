@@ -15,7 +15,9 @@ void set_pin_output(GPIO_TypeDef  * GPIOPORT, const int pin) {
         GPIOPORT -> CRL &= ~(0x3 << (pin*4 + 2));
     } else {
         GPIOPORT -> CRH &= ~(0x3 << (pin*4 - 32));
+
         GPIOPORT -> CRH |= 0x1 << (pin*4 - 32);
+
         GPIOPORT -> CRH &= ~(0x3 << (pin*4 + 2 - 32));
     }
 }
@@ -32,13 +34,15 @@ void set_pin_input_pull_down(GPIO_TypeDef  * GPIOPORT, const int pin) {
         //Input with pull-up pull-down
         GPIOPORT -> CRL |= 0x2 << (pin*4 + 2);
     } else {
-
         GPIOPORT -> CRH &= ~(0x3 << (pin*4 - 32));
 
         GPIOPORT -> CRH &= ~(0x3 << (pin*4 + 2 - 32));
 
-        GPIOPORT -> CRL |= 0x2 << (pin*4 + 2 - 32);
+        GPIOPORT -> CRH |= 0x2 << (pin*4 + 2 - 32);
     }
+
+    // pull down
+    GPIOPORT -> ODR &= ~(1 << pin);
 }
 
 void write_pin(GPIO_TypeDef * GPIOPORT, const int pin, const int value) {
@@ -47,6 +51,10 @@ void write_pin(GPIO_TypeDef * GPIOPORT, const int pin, const int value) {
     } else {
         GPIOPORT -> BSRR = 0x1 << (pin + 16);
     }
+}
+
+uint32_t read_pin(GPIO_TypeDef * GPIOPORT, const int pin) {
+    return GPIOPORT -> IDR & (0x1 << pin);
 }
 
 void enable_clock(const uint32_t rcc_gpio_clock) {

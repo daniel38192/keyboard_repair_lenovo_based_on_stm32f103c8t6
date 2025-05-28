@@ -105,6 +105,26 @@ void configure_keyboard_pins(void) {
     configure_keyboard_column_pins();
 }
 
+//Row parameter starting from zero
+struct keyboard_row_data read_keyboard_row(const int row) {
+
+    struct keyboard_row_data keyboard_row_data_from_a_single_row;
+    //Enable row, this is for let the voltage go through the keyboard buttons
+    write_pin(keyboard_matrix_row_pin_port_list[row], keyboard_matrix_row_pin_number_list[row], HIGH);
+
+    //Read all columns and store it on the struct
+    for (int i = 0; i < KEYBOARD_MATRIX_COLS; ++i) {
+        keyboard_row_data_from_a_single_row.column_data[i] = read_pin(keyboard_matrix_column_pin_port_list[i], keyboard_matrix_column_pin_number_list[i]);
+    }
+
+    //Disable row
+    write_pin(keyboard_matrix_row_pin_port_list[row], keyboard_matrix_row_pin_number_list[row], LOW);
+
+    return keyboard_row_data_from_a_single_row;
+
+
+}
+
 
 
 
