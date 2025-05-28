@@ -37,7 +37,10 @@ enable_language(C ASM)
 # Create an executable object type
 add_executable(${CMAKE_PROJECT_NAME}
         Core/Inc/keyboard_matrix_definition.h
-        Core/Src/keyboard_helper.c)
+        Core/Src/keyboard_gpio_helper.c
+        Core/Src/gpio.c
+        Core/Inc/gpio.h
+        Core/Inc/keyboard_gpio_helper.h)
 
 # Add STM32CubeMX generated sources
 add_subdirectory(cmake/stm32cubemx)
