@@ -2,6 +2,8 @@
 // Created by Daniel Nuñez Villegas on 27/05/25.
 //
 
+#include <stdbool.h>
+
 #include "stm32f1xx.h"
 
 void set_pin_output(GPIO_TypeDef  * GPIOPORT, const int pin) {
@@ -45,7 +47,7 @@ void set_pin_input_pull_down(GPIO_TypeDef  * GPIOPORT, const int pin) {
     GPIOPORT -> ODR &= ~(1 << pin);
 }
 
-void write_pin(GPIO_TypeDef * GPIOPORT, const int pin, const int value) {
+void write_pin(GPIO_TypeDef * GPIOPORT, const int pin, const bool value) {
     if (value) {
         GPIOPORT -> BSRR = 0x1 << pin;
     } else {
@@ -53,7 +55,7 @@ void write_pin(GPIO_TypeDef * GPIOPORT, const int pin, const int value) {
     }
 }
 
-uint32_t read_pin(GPIO_TypeDef * GPIOPORT, const int pin) {
+bool read_pin(GPIO_TypeDef * GPIOPORT, const int pin) {
     return GPIOPORT -> IDR & (0x1 << pin);
 }
 

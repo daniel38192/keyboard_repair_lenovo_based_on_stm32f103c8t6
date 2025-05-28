@@ -96,6 +96,8 @@ int main(void)
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 2 */
 
+  RCC->BDCR &= ~RCC_BDCR_LSEON;
+
   enable_clock(RCC_APB2ENR_IOPCEN);
   //enable_clock(RCC_APB2ENR_IOPAEN);
 
@@ -112,11 +114,7 @@ int main(void)
   {
     /* USER CODE END WHILE */
 
-    if (read_pin(GPIOC, 14)) {
-      write_pin(GPIOC, 13, HIGH);
-    } else {
-      write_pin(GPIOC, 13, LOW);
-    }
+    write_pin(GPIOC, 13, read_pin(GPIOC, 14));
 
     /* USER CODE BEGIN 3 */
 

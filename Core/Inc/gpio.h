@@ -5,18 +5,17 @@
 #ifndef GPIO_H
 #define GPIO_H
 
-#include "stm32f103xb.h"
+#include <stdbool.h>
 
-#define HIGH 0x1
-#define LOW  0x0
+#include "stm32f103xb.h"
 
 void set_pin_output(GPIO_TypeDef * GPIOPORT, int pin);
 
 void set_pin_input_pull_down(GPIO_TypeDef  * GPIOPORT, int pin);
 
-void write_pin(GPIO_TypeDef * GPIOPORT, int pin, int value);
+void write_pin(GPIO_TypeDef * GPIOPORT, int pin, bool value);
 
-uint32_t read_pin(GPIO_TypeDef * GPIOPORT, int pin);
+bool read_pin(GPIO_TypeDef * GPIOPORT, int pin);
 
 void enable_clock(uint32_t rcc_gpio_clock);
 

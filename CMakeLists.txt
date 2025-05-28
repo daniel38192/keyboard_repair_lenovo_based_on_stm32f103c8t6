@@ -41,7 +41,8 @@ add_executable(${CMAKE_PROJECT_NAME}
         Core/Src/gpio.c
         Core/Inc/gpio.h
         Core/Inc/keyboard_gpio_helper.h
-        Core/Src/keyboard.c)
+        Core/Src/keyboard.c
+        Core/Inc/keyboard.h)
 
 # Add STM32CubeMX generated sources
 add_subdirectory(cmake/stm32cubemx)
