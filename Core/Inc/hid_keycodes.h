@@ -112,7 +112,7 @@
 #define HID_KEY_KP_9             0x61
 #define HID_KEY_KP_0             0x62
 #define HID_KEY_KP_PERIOD        0x63
-#define HID_KEY_KP_COMMA         0x64
+#define HID_KEY_NON_US_HASH2      0x64
 #define HID_KEY_KP_EQUAL         0x65
 #define HID_KEY_F13              0x66
 #define HID_KEY_F14              0x67
