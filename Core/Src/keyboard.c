@@ -2,6 +2,7 @@
 // Created by Daniel Nuñez Villegas on 28/05/25.
 //
 
+
 #include "keyboard.h"
 
 #include "keyboard_matrix_definition.h"
@@ -13,8 +14,6 @@
 #include "hid_keycodes.h"
 
 #include "usbd_hid.h"
-
-extern USBD_HandleTypeDef hUsbDeviceFS;
 
 static struct keyboard_button keyboard_map[KEYBOARD_MATRIX_ROWS][KEYBOARD_MATRIX_COLS] = {
     //Row 1
@@ -37,13 +36,46 @@ static struct keyboard_button keyboard_map[KEYBOARD_MATRIX_ROWS][KEYBOARD_MATRIX
 
 uint8_t keyboard_key_debounce[KEYBOARD_MATRIX_ROWS][KEYBOARD_MATRIX_COLS] = {0};
 
+extern USBD_HandleTypeDef hUsbDeviceFS;
+
+typedef struct
+{
+    uint8_t MODIFIER;
+    uint8_t RESERVED;
+    uint8_t KEYCODE1;
+    uint8_t KEYCODE2;
+    uint8_t KEYCODE3;
+    uint8_t KEYCODE4;
+    uint8_t KEYCODE5;
+    uint8_t KEYCODE6;
+}subKeyBoard;
 
 
-uint8_t report;
+subKeyBoard keyBoardHIDsub = {0,0,0,0,0,0,0,0};
 
-void send_keyboard_report(uint8_t keyBoardHIDsub[8]) {
-    USBD_HID_SendReport(&hUsbDeviceFS, keyBoardHIDsub,8);
+
+void send_keyboard_report(uint8_t data[8]) {
+
+    keyBoardHIDsub.MODIFIER = data[0];
+    keyBoardHIDsub.KEYCODE1 = data[2];
+    keyBoardHIDsub.KEYCODE2 = data[3];
+    keyBoardHIDsub.KEYCODE3 = data[4];
+    keyBoardHIDsub.KEYCODE4 = data[5];
+    keyBoardHIDsub.KEYCODE5 = data[6];
+    keyBoardHIDsub.KEYCODE6 = data[7];
+
+    USBD_HID_SendReport(&hUsbDeviceFS, &keyBoardHIDsub,sizeof(keyBoardHIDsub));
+
+    keyBoardHIDsub.MODIFIER = 0;
+    keyBoardHIDsub.KEYCODE1 = 0;
+    keyBoardHIDsub.KEYCODE2 = 0;
+    keyBoardHIDsub.KEYCODE3 = 0;
+    keyBoardHIDsub.KEYCODE4 = 0;
+    keyBoardHIDsub.KEYCODE5 = 0;
+    keyBoardHIDsub.KEYCODE6 = 0;
 }
+
+
 
 void software_debounce_keys(void) {
     for (int n_debouncing = 0; n_debouncing < DEBOUNCING_SCANNING_NUMBER; n_debouncing++) {
@@ -57,36 +89,37 @@ void software_debounce_keys(void) {
                     }
                 } else {
                     // Key is released, decrement debounce counter
-                    if (keyboard_key_debounce[rows][cols] > 0) {
-                        keyboard_key_debounce[rows][cols]--;
-                    }
+                    keyboard_key_debounce[rows][cols] = 0;
                 }
             }
         }
-
+        HAL_Delay(1);
     }
 }
 
 void send_keys_report_to_usb(void) {
     /* MODIFIER, RESERVED, KEYCODE1, KEYCODE2, KEYCODE3, KEYCODE4, KEYCODE5, KEYCODE6*/
-    uint8_t keyBoardHIDsub[8] = {0};
+    uint8_t keyboardData[8] = {0};
 
     int keycode_count = 0;
 
+
     for (int rows = 0; rows < KEYBOARD_MATRIX_ROWS; ++rows) {
         for (int cols = 0; cols < KEYBOARD_MATRIX_COLS; ++cols) {
-            if (keyboard_key_debounce[rows][cols] >= KEY_PRESSED_DEBOUNCING_MINIMUM_VALUE) {
+            if (keyboard_key_debounce[rows][cols] > KEY_PRESSED_DEBOUNCING_MINIMUM_VALUE) {
                 //the button was pressed
                 //decide which type of button was pressed
                 switch (keyboard_map[rows][cols].key_type) {
                     case KEY: {
                         if (keycode_count < 6) {
-                            keyBoardHIDsub[keycode_count + 2] = keyboard_map[rows][cols].code;
+                            keyboardData[keycode_count + 2] = keyboard_map[rows][cols].code;
                             keycode_count++;
+
                         }
                     } break;
                     case MODIFIER: {
-                        keyBoardHIDsub[0] |= keyboard_map[rows][cols].code;
+                        keyboardData[0] |= keyboard_map[rows][cols].code;
+
                     } break;
                     default: {
                         // Handle unexpected key_type (e.g., log for debugging)
@@ -96,12 +129,12 @@ void send_keys_report_to_usb(void) {
         }
     }
 
-    send_keyboard_report(keyBoardHIDsub);
+    send_keyboard_report(keyboardData);
 }
 
 void clear_keyboard_key_debounce_array(void) {
-    for (int rows = 0; rows < KEYBOARD_MATRIX_ROWS; rows++) {
-        for (int cols = 0; cols < KEYBOARD_MATRIX_COLS; cols++) {
+    for (int rows = 0; rows < KEYBOARD_MATRIX_ROWS; ++rows) {
+        for (int cols = 0; cols < KEYBOARD_MATRIX_COLS; ++cols) {
             keyboard_key_debounce[rows][cols] = 0;
         }
     }
@@ -113,5 +146,6 @@ void scan_and_send_keys(void) {
     send_keys_report_to_usb();
     clear_keyboard_key_debounce_array();
 }
+
 
 
