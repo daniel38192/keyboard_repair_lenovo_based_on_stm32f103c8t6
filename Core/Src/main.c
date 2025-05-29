@@ -111,6 +111,8 @@ int main(void)
 
   print("Keyboard test stm32\n");
 
+  print_uint8_t(0xFF);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
