@@ -6,6 +6,10 @@
 #define KEYBOARD_H
 
 #include <stdint.h>
+
+#define DEBOUNCING_SCANNING_NUMBER 25
+#define KEY_PRESSED_DEBOUNCING_MINIMUM_VALUE 21
+
 enum HID_KEY_TYPE {
     MODIFIER,
     KEY,

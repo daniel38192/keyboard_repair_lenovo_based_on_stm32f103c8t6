@@ -35,9 +35,7 @@ static struct keyboard_button keyboard_map[KEYBOARD_MATRIX_ROWS][KEYBOARD_MATRIX
     {{KEY, HID_KEY_KP_SLASH}, {KEY, HID_KEY_KP_7}, {EMPTY, 0}, {KEY, HID_KEY_ESCAPE}, {KEY, HID_KEY_H}, {KEY, HID_KEY_F4}, {KEY, HID_KEY_NON_US_HASH}, {KEY, HID_KEY_G},{EMPTY, 0},{KEY, HID_KEY_MUTE}, {KEY, HID_KEY_F6}, {EMPTY, 0}, {MODIFIER, HID_MODIFIER_LEFT_ALT}, {EMPTY, 0}, {KEY, HID_KEY_UP_ARROW}, {EMPTY, 0},  {KEY, HID_KEY_F5}, {EMPTY, 0}},
 };
 
-
-
-
+uint8_t keyboard_key_debounce[KEYBOARD_MATRIX_ROWS][KEYBOARD_MATRIX_COLS] = {0};
 
 
 
@@ -47,58 +45,73 @@ void send_keyboard_report(uint8_t keyBoardHIDsub[8]) {
     USBD_HID_SendReport(&hUsbDeviceFS, keyBoardHIDsub,8);
 }
 
-void scan_and_send_keys(void) {
-    struct keyboard_data keyboard_raw_values = read_keyboard();
+void software_debounce_keys(void) {
+    for (int n_debouncing = 0; n_debouncing < DEBOUNCING_SCANNING_NUMBER; ++n_debouncing) {
+        struct keyboard_data keyboard_raw_values = read_keyboard();
+        for (int rows = 0; rows < KEYBOARD_MATRIX_ROWS; ++rows) {
+            for (int cols = 0; cols < KEYBOARD_MATRIX_COLS; ++cols) {
+                if (keyboard_raw_values.data[rows][cols]) {
+                    // Key is pressed, increment debounce counter
+                    if (keyboard_key_debounce[rows][cols] < DEBOUNCING_SCANNING_NUMBER) {
+                        keyboard_key_debounce[rows][cols]++;
+                    }
+                } else {
+                    // Key is released, decrement debounce counter
+                    if (keyboard_key_debounce[rows][cols] > 0) {
+                        keyboard_key_debounce[rows][cols]--;
+                    }
+                }
+            }
+        }
 
+    }
+}
+
+void send_keys_report_to_usb(void) {
     /* MODIFIER, RESERVED, KEYCODE1, KEYCODE2, KEYCODE3, KEYCODE4, KEYCODE5, KEYCODE6*/
-    uint8_t keyBoardHIDsub[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+    uint8_t keyBoardHIDsub[8] = {0};
 
     int keycode_count = 0;
 
     for (int rows = 0; rows < KEYBOARD_MATRIX_ROWS; ++rows) {
         for (int cols = 0; cols < KEYBOARD_MATRIX_COLS; ++cols) {
-            if (keyboard_raw_values.data[rows][cols]) {
+            if (keyboard_key_debounce[rows][cols] >= KEY_PRESSED_DEBOUNCING_MINIMUM_VALUE) {
                 //the button was pressed
                 //decide which type of button was pressed
                 switch (keyboard_map[rows][cols].key_type) {
                     case KEY: {
-                        //set a limit for the keycodes
                         if (keycode_count < 6) {
-                            keyBoardHIDsub[keycode_count+2] = keyboard_map[rows][cols].code;
+                            keyBoardHIDsub[keycode_count + 2] = keyboard_map[rows][cols].code;
+                            keycode_count++;
                         }
-                        keycode_count++;
-                    }; break;
+                    } break;
                     case MODIFIER: {
-                        //write modifier to MODIFIER of the array
                         keyBoardHIDsub[0] |= keyboard_map[rows][cols].code;
-                    }; break;
+                    } break;
                     default: {
-
-                    }
+                        // Handle unexpected key_type (e.g., log for debugging)
+                    } break;
                 }
             }
         }
     }
 
     send_keyboard_report(keyBoardHIDsub);
+}
 
+void clear_keyboard_key_debounce_array(void) {
+    for (int rows = 0; rows < KEYBOARD_MATRIX_ROWS; ++rows) {
+        for (int cols = 0; cols < KEYBOARD_MATRIX_COLS; ++cols) {
+            keyboard_key_debounce[rows][cols] = 0;
+        }
+    }
 }
 
 
-void send_keys(void) {
-    /*
-    keyBoardHIDsub.KEYCODE1=0x04;  // Press A key
-    keyBoardHIDsub.MODIFIER=0x02;  // To press shift key
-    keyBoardHIDsub.KEYCODE2=0x05;  // Press B key
-    keyBoardHIDsub.KEYCODE3=0x06;  // Press C key
-
-
-    HAL_Delay(50); 		       // Press all key for 50 milliseconds
-    keyBoardHIDsub.MODIFIER=0x00;  // To release shift key
-    keyBoardHIDsub.KEYCODE1=0x00;  // Release A key
-    keyBoardHIDsub.KEYCODE2=0x00;  // Release B key
-    keyBoardHIDsub.KEYCODE3=0x00;  // Release C key
-    */
+void scan_and_send_keys(void) {
+    software_debounce_keys();
+    send_keys_report_to_usb();
+    clear_keyboard_key_debounce_array();
 }
 
 
