@@ -46,10 +46,10 @@ void send_keyboard_report(uint8_t keyBoardHIDsub[8]) {
 }
 
 void software_debounce_keys(void) {
-    for (int n_debouncing = 0; n_debouncing < DEBOUNCING_SCANNING_NUMBER; ++n_debouncing) {
+    for (int n_debouncing = 0; n_debouncing < DEBOUNCING_SCANNING_NUMBER; n_debouncing++) {
         struct keyboard_data keyboard_raw_values = read_keyboard();
-        for (int rows = 0; rows < KEYBOARD_MATRIX_ROWS; ++rows) {
-            for (int cols = 0; cols < KEYBOARD_MATRIX_COLS; ++cols) {
+        for (int rows = 0; rows < KEYBOARD_MATRIX_ROWS; rows++) {
+            for (int cols = 0; cols < KEYBOARD_MATRIX_COLS; cols++) {
                 if (keyboard_raw_values.data[rows][cols]) {
                     // Key is pressed, increment debounce counter
                     if (keyboard_key_debounce[rows][cols] < DEBOUNCING_SCANNING_NUMBER) {
@@ -100,8 +100,8 @@ void send_keys_report_to_usb(void) {
 }
 
 void clear_keyboard_key_debounce_array(void) {
-    for (int rows = 0; rows < KEYBOARD_MATRIX_ROWS; ++rows) {
-        for (int cols = 0; cols < KEYBOARD_MATRIX_COLS; ++cols) {
+    for (int rows = 0; rows < KEYBOARD_MATRIX_ROWS; rows++) {
+        for (int cols = 0; cols < KEYBOARD_MATRIX_COLS; cols++) {
             keyboard_key_debounce[rows][cols] = 0;
         }
     }
