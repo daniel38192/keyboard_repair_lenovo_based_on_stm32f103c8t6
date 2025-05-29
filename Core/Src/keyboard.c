@@ -6,9 +6,15 @@
 
 #include "keyboard_matrix_definition.h"
 
+#include "keyboard_gpio_helper.h"
+
 #include <stdint.h>
 
 #include "hid_keycodes.h"
+
+#include "usbd_hid.h"
+
+extern USBD_HandleTypeDef hUsbDeviceFS;
 
 static struct keyboard_button keyboard_map[KEYBOARD_MATRIX_ROWS][KEYBOARD_MATRIX_COLS] = {
     //Row 1
@@ -29,9 +35,7 @@ static struct keyboard_button keyboard_map[KEYBOARD_MATRIX_ROWS][KEYBOARD_MATRIX
     {{KEY, HID_KEY_KP_SLASH}, {KEY, HID_KEY_KP_7}, {EMPTY, 0}, {KEY, HID_KEY_ESCAPE}, {KEY, HID_KEY_H}, {KEY, HID_KEY_F4}, {KEY, HID_KEY_NON_US_HASH}, {KEY, HID_KEY_G},{EMPTY, 0},{KEY, HID_KEY_MUTE}, {KEY, HID_KEY_F6}, {EMPTY, 0}, {MODIFIER, HID_MODIFIER_LEFT_ALT}, {EMPTY, 0}, {KEY, HID_KEY_UP_ARROW}, {EMPTY, 0},  {KEY, HID_KEY_F5}, {EMPTY, 0}},
 };
 
-/*
-#include "usbd_hid.h"
-*extern USBD_HandleTypeDef hUsbDeviceFS;
+
 
 typedef struct
 {
@@ -47,19 +51,28 @@ typedef struct
 
 subKeyBoard keyBoardHIDsub = {0,0,0,0,0,0,0,0};
 
-while(1){
+void scan_and_send_keys(void) {
+    struct keyboard_data keyboard_raw_values = read_keyboard();
 
-keyBoardHIDsub.KEYCODE1=0x04;  // Press A key
+
+}
+
+
+void send_keys(void) {
+    keyBoardHIDsub.KEYCODE1=0x04;  // Press A key
     keyBoardHIDsub.MODIFIER=0x02;  // To press shift key
     keyBoardHIDsub.KEYCODE2=0x05;  // Press B key
     keyBoardHIDsub.KEYCODE3=0x06;  // Press C key
-    USBD_HID_SendReport(&hUsbDeviceFS,&keyBoardHIDsub,sizeof(keyBoardHIDsub));
+
+
     HAL_Delay(50); 		       // Press all key for 50 milliseconds
     keyBoardHIDsub.MODIFIER=0x00;  // To release shift key
     keyBoardHIDsub.KEYCODE1=0x00;  // Release A key
     keyBoardHIDsub.KEYCODE2=0x00;  // Release B key
     keyBoardHIDsub.KEYCODE3=0x00;  // Release C key
+
+}
+
+void send_keyboard_report(void) {
     USBD_HID_SendReport(&hUsbDeviceFS,&keyBoardHIDsub,sizeof(keyBoardHIDsub));
-    HAL_Delay(1000); 	       // Repeat this task on every 1 second
-    }
- */
+}
