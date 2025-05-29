@@ -25,7 +25,7 @@
 
 #include "keyboard_gpio_helper.h"
 
-#include "gpio.h"
+#include "keyboard.h"
 
 /* USER CODE END Includes */
 
@@ -109,6 +109,10 @@ int main(void)
   // ReSharper disable once CppDFAEndlessLoop
   while (1)
   {
+
+    scan_and_send_keys();
+    HAL_Delay(20);
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

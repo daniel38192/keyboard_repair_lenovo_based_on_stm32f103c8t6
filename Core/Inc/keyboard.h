@@ -18,4 +18,6 @@ struct keyboard_button {
     uint8_t code;
 };
 
+void scan_and_send_keys(void);
+
 #endif //KEYBOARD_H
