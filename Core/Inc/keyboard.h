@@ -25,4 +25,6 @@ struct keyboard_button {
 
 void print_software_debounce_keys(void);
 
+void scan_and_send_keys(void);
+
 #endif //KEYBOARD_H

@@ -123,22 +123,8 @@ int main(void)
   {
     /* USER CODE END WHILE */
 
-    print("------------------------------------------------\n\r");
 
-    struct keyboard_data keyboard_data = read_keyboard();
-
-    for (int rows = 0; rows < KEYBOARD_MATRIX_ROWS; ++rows) {
-      for (int cols = 0; cols < KEYBOARD_MATRIX_COLS; ++cols) {
-        print_bool(keyboard_data.data[rows][cols]);
-        print("\t");
-      }
-      print("\n\r");
-    }
-
-    print("------------------------------------------------\n\r");
-
-    print_software_debounce_keys();
-
+    scan_and_send_keys();
     HAL_Delay(1000);
 
     /* USER CODE BEGIN 3 */
