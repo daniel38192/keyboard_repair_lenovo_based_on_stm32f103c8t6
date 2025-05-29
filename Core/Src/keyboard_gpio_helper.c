@@ -106,21 +106,23 @@ void configure_keyboard_pins(void) {
 }
 
 //Row parameter starting from zero
-struct keyboard_row_data read_keyboard_row(const int row) {
+struct keyboard_data read_keyboard() {
 
-    struct keyboard_row_data keyboard_row_data_from_a_single_row;
-    //Enable row, this is for let the voltage go through the keyboard buttons
-    write_pin(keyboard_matrix_row_pin_port_list[row], keyboard_matrix_row_pin_number_list[row], true);
+    struct keyboard_data keyboard_data;
 
     //Read all columns and store it on the struct
-    for (int i = 0; i < KEYBOARD_MATRIX_COLS; ++i) {
-        keyboard_row_data_from_a_single_row.column_data[i] = read_pin(keyboard_matrix_column_pin_port_list[i], keyboard_matrix_column_pin_number_list[i]);
+    for (int row = 0; row < KEYBOARD_MATRIX_ROWS; ++row) {
+        //Enable row, this is for let the voltage go through the keyboard buttons
+        write_pin(keyboard_matrix_row_pin_port_list[row], keyboard_matrix_row_pin_number_list[row], true);
+        for (int column = 0; column < KEYBOARD_MATRIX_COLS; ++column) {
+            //read every column and store to the array
+            keyboard_data.data[row][column] = read_pin(keyboard_matrix_column_pin_port_list[column], keyboard_matrix_column_pin_number_list[column]);
+        }
+        //Disable row
+        write_pin(keyboard_matrix_row_pin_port_list[row], keyboard_matrix_row_pin_number_list[row], false);
     }
 
-    //Disable row
-    write_pin(keyboard_matrix_row_pin_port_list[row], keyboard_matrix_row_pin_number_list[row], false);
-
-    return keyboard_row_data_from_a_single_row;
+    return keyboard_data;
 
 
 }

@@ -23,7 +23,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
-#include <stdbool.h>
+#include "keyboard_gpio_helper.h"
 
 #include "gpio.h"
 
@@ -45,6 +45,7 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
 
@@ -55,12 +56,39 @@
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_USART1_UART_Init(void);
 /* USER CODE BEGIN PFP */
+
+void usart_print_char(char c);
+
+void print(const char *string);
+
+void printBool(bool boolean);
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+void usart_print_char(const char c) {
+    USART1->DR = c;
+    while (!(USART1 ->SR & USART_SR_TC));
+}
+
+void print(const char *string) {
+    while (*string) {
+      usart_print_char(*string);
+      string++;
+    }
+}
+
+void printBool(const bool boolean) {
+  if (boolean) {
+    print("true");
+  } else {
+    print("false");
+  }
+}
 
 /* USER CODE END 0 */
 
@@ -94,27 +122,41 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USB_DEVICE_Init();
+  MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
 
   RCC->BDCR &= ~RCC_BDCR_LSEON;
 
-  enable_clock(RCC_APB2ENR_IOPCEN);
-  //enable_clock(RCC_APB2ENR_IOPAEN);
+  configure_keyboard_pins();
 
-  set_pin_output(GPIOC, 13);
 
-  set_pin_input_pull_down(GPIOC, 14);
+  print("Keyboard test stm32\n");
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+
   // ReSharper disable once CppDFAEndlessLoop
   while (1)
   {
     /* USER CODE END WHILE */
 
-    write_pin(GPIOC, 13, read_pin(GPIOC, 14));
+    print("------------------------------------------------\n\r");
+
+    struct keyboard_data keyboard_data = read_keyboard();
+
+    for (int rows = 0; rows < KEYBOARD_MATRIX_ROWS; ++rows) {
+      for (int cols = 0; cols < KEYBOARD_MATRIX_COLS; ++cols) {
+        printBool(keyboard_data.data[rows][cols]);
+        print("\t");
+      }
+      print("\n\r");
+    }
+
+    print("------------------------------------------------\n\r");
+
+    HAL_Delay(1000);
 
     /* USER CODE BEGIN 3 */
 
@@ -166,6 +208,39 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+}
+
+/**
+  * @brief USART1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART1_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART1_Init 0 */
+
+  /* USER CODE END USART1_Init 0 */
+
+  /* USER CODE BEGIN USART1_Init 1 */
+
+  /* USER CODE END USART1_Init 1 */
+  huart1.Instance = USART1;
+  huart1.Init.BaudRate = 115200;
+  huart1.Init.WordLength = UART_WORDLENGTH_8B;
+  huart1.Init.StopBits = UART_STOPBITS_1;
+  huart1.Init.Parity = UART_PARITY_NONE;
+  huart1.Init.Mode = UART_MODE_TX_RX;
+  huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart1.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART1_Init 2 */
+
+  /* USER CODE END USART1_Init 2 */
+
 }
 
 /**
