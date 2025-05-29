@@ -44,14 +44,14 @@ static struct keyboard_button keyboard_map[KEYBOARD_MATRIX_ROWS][KEYBOARD_MATRIX
 uint8_t report;
 
 void send_keyboard_report(uint8_t keyBoardHIDsub[8]) {
-    USBD_HID_SendReport(&hUsbDeviceFS, (uint8_t *)&keyBoardHIDsub,sizeof(keyBoardHIDsub));
+    USBD_HID_SendReport(&hUsbDeviceFS, keyBoardHIDsub,sizeof(keyBoardHIDsub));
 }
 
 void scan_and_send_keys(void) {
     struct keyboard_data keyboard_raw_values = read_keyboard();
 
     /* MODIFIER, RESERVED, KEYCODE1, KEYCODE2, KEYCODE3, KEYCODE4, KEYCODE5, KEYCODE6*/
-    uint8_t keyBoardHIDsub[8];
+    uint8_t keyBoardHIDsub[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 
     int keycode_count = 0;
 
