@@ -6,6 +6,11 @@
 #define KEYBOARD_H
 
 #include <stdint.h>
+
+#define DEBOUNCING_SCANNING_NUMBER 20
+
+#define KEY_PRESSED_DEBOUNCING_MINIMUM_VALUE 17
+
 enum HID_KEY_TYPE {
     MODIFIER,
     KEY,
@@ -17,5 +22,7 @@ struct keyboard_button {
     enum HID_KEY_TYPE key_type;
     uint8_t code;
 };
+
+void print_software_debounce_keys(void);
 
 #endif //KEYBOARD_H

@@ -26,6 +26,9 @@
 #include "keyboard_gpio_helper.h"
 
 #include "gpio.h"
+#include "keyboard.h"
+
+#include "usart.h"
 
 /* USER CODE END Includes */
 
@@ -59,36 +62,12 @@ static void MX_GPIO_Init(void);
 static void MX_USART1_UART_Init(void);
 /* USER CODE BEGIN PFP */
 
-void usart_print_char(char c);
-
-void print(const char *string);
-
-void printBool(bool boolean);
-
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-void usart_print_char(const char c) {
-    USART1->DR = c;
-    while (!(USART1 ->SR & USART_SR_TC));
-}
 
-void print(const char *string) {
-    while (*string) {
-      usart_print_char(*string);
-      string++;
-    }
-}
-
-void printBool(const bool boolean) {
-  if (boolean) {
-    print("true");
-  } else {
-    print("false");
-  }
-}
 
 /* USER CODE END 0 */
 
@@ -148,13 +127,15 @@ int main(void)
 
     for (int rows = 0; rows < KEYBOARD_MATRIX_ROWS; ++rows) {
       for (int cols = 0; cols < KEYBOARD_MATRIX_COLS; ++cols) {
-        printBool(keyboard_data.data[rows][cols]);
+        print_bool(keyboard_data.data[rows][cols]);
         print("\t");
       }
       print("\n\r");
     }
 
     print("------------------------------------------------\n\r");
+
+    print_software_debounce_keys();
 
     HAL_Delay(1000);
 
